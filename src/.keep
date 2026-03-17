@@ -1,0 +1,63 @@
+`timescale 1ns / 1ps
+
+module sign_mag_adder #(
+    parameter SIZE = 8
+)(
+    input  logic [SIZE-1:0] a,
+    input  logic [SIZE-1:0] b,
+    output logic [SIZE-1:0] s,
+    output logic            overflow
+);
+
+    logic a_sign, b_sign;
+    logic [SIZE-2:0] a_mag, b_mag;
+    
+    logic s_sign;
+    logic [SIZE-2:0] s_mag;
+    
+   
+    logic [SIZE-1:0] add_mag;
+
+    assign a_sign = a[SIZE-1];
+    assign b_sign = b[SIZE-1];
+    assign a_mag  = a[SIZE-2:0];
+    assign b_mag  = b[SIZE-2:0];
+
+    always_comb begin
+
+        overflow = 1'b0;
+        s_sign   = 1'b0;
+        s_mag    = '0;
+        add_mag  = '0;
+
+        if (a_sign == b_sign) begin
+         
+            add_mag  = a_mag + b_mag;
+            s_mag    = add_mag[SIZE-2:0];
+            s_sign   = a_sign;
+            overflow = add_mag[SIZE-1];
+        end else begin
+           
+            if (a_mag > b_mag) begin
+                s_mag  = a_mag - b_mag;
+                s_sign = a_sign;
+            end else if (a_mag < b_mag) begin
+                s_mag  = b_mag - a_mag;
+                s_sign = b_sign;
+            end else begin
+              
+                s_mag  = '0;
+                s_sign = 1'b0; 
+            end
+        end
+
+
+        if (s_mag == '0) begin
+            s_sign = 1'b0;
+        end
+
+
+        s = {s_sign, s_mag};
+    end
+
+endmodule
